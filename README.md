@@ -11,11 +11,12 @@ generation.  Stuff I'm planning on doing:
 * Add wildlife generator (wildlife based on biome)
 * Generate bridges, etc
 * Move heightmap to a planet generator
+* Add crime && military police
+* Add colonization
+* Add wars
 
 Crazy ideas:
 * Add fancy gfx (global illumination, god rays based on sun, mist, etc)
 * Send basic mesh to GPU, transform it based on camera location and seed?  Might be faster maybe!
 * Make realistic economy based on a free market.  Have villiagers mine and farm the resources they need as a collective at first, and start introducing more and more selfishness into the system.
 * Villiagers can use resources to build more buildings, bridges, increasingly complex tech, etc
-* Add crime && military police
-* Add wars
