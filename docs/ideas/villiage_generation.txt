@@ -1,0 +1,13 @@
+Observations about RL villiages:
+
+* Ground should be relatively flat
+* Be near water source
+* Be near resources
+* Exist in regions with hospitable temperatures
+
+Ideas:
+
+1.) Decide on size of villiage (say, 10 buildings).
+2.) Find areas that can support buildings in close proximity, public spots, etc
+3.) Form land to fit the villiage (flatten land for houses, build paths, etc)
+4.) Spawn buildings
