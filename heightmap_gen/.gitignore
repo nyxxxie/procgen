@@ -1,6 +1,9 @@
 # Ignore generated images
 *.png
 
+# Ignore our session
+session.vim
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
