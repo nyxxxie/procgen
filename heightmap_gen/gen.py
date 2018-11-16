@@ -49,10 +49,6 @@ class MapGenerator(object):
 
         bar.finish()
 
-    def _get_heightmap_3d(self, x, y):
-        h = self.heightmap[y, x, 0]
-        return np.array([x, h, y])
-
     def normalize(self, v):
         norm=np.linalg.norm(v, ord=1)
         if norm==0:
@@ -66,13 +62,17 @@ class MapGenerator(object):
         https://squircleart.github.io/shading/normal-map-generation.html
         """
         # Get the 3d coordinates of each point adjacent to x,y
-        u = self._get_heightmap_3d(x, (y+1) % self.height)
-        d = self._get_heightmap_3d(x, (y-1) % self.height)
-        r = self._get_heightmap_3d((x+1) % self.width, y)
-        l = self._get_heightmap_3d((x-1) % self.width, y)
+        u = float(self.heightmap[(y+1) % self.height, x, 0])
+        d = float(self.heightmap[(y-1) % self.height, x, 0])
+        r = float(self.heightmap[y, (x+1) % self.width, 0])
+        l = float(self.heightmap[y, (x-1) % self.width, 0])
 
-        # Calculate the cross product to get our normals
-        norm = self.normalize(np.cross(r-l, u-d))
+        # Calc linear derivatives
+        dzdx = (l - r)/2
+        dzdy = (d - u)/2
+
+        # Calculate normal
+        norm = self.normalize(np.array([-dzdx, -dzdy, 1.0]))
 
         # Convert normals to colors so we can encode them as pixels
         norm = (norm+1) * 128
