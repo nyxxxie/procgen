@@ -3,9 +3,9 @@ from progress.bar import Bar
 from map import Color, NormalMap, HeightMap, TopographicMap
 
 def main():
-    h = 256
+    h = 1024
 
-    heightmap = HeightMap(h, h)
+    heightmap = HeightMap(h, h, 70.0)
     heightmap.to_image('heightmap.png')
 
     normalmap = NormalMap.from_heightmap(heightmap)
