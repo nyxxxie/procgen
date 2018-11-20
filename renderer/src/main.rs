@@ -115,6 +115,10 @@ fn main() {
             // handle user input here
         }
 
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
         /* Draw the triangle */
         shader.set_used();
         unsafe {
@@ -124,10 +128,6 @@ fn main() {
                 gl::TRIANGLES,  // mode
                 0,  // starting index
                 3);  // number of indices to be rendered
-        }
-
-        unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
         window.gl_swap_window()
