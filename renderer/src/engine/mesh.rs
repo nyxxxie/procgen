@@ -7,17 +7,20 @@ extern crate gl;
 
 use std::mem::size_of;
 use engine::buffer::Buffer;
+use engine::shader::Program;
 use engine::vao::VertexArray;
 use gl::types::{ GLuint, GLint, GLvoid };
 
 /// Represents a mesh of vertices.
 pub struct Mesh {
     vao: VertexArray,
+	shader: Program,
 }
 
 impl Mesh {
 	pub fn draw(&self, mode: GLuint) {
 		self.vao.bind();
+		self.shader.activate();
 		unsafe {
             gl::DrawArrays(
                 mode,  // mode
@@ -46,6 +49,7 @@ pub struct MeshBuilder {
 	vertices: Vec<f32>,
 	indices: Vec<u32>,
 	attributes: Vec<Attribute>,
+	shader: Option<Program>,
 }
 
 impl MeshBuilder {
@@ -54,6 +58,7 @@ impl MeshBuilder {
 			vertices: Vec::new(),
 			indices: Vec::new(),
 			attributes: Vec::new(),
+			shader: None,
 		};
 	}
 
@@ -77,6 +82,11 @@ impl MeshBuilder {
 		component_amt: GLint
 	) -> MeshBuilder {
 		self.attributes.push(Attribute{ location, component_amt });
+		return self;
+	}
+
+	pub fn shader(mut self, shader: Program) -> MeshBuilder {
+		self.shader = Some(shader);
 		return self;
 	}
 
@@ -122,6 +132,6 @@ impl MeshBuilder {
 		// TODO: is it safe to let the vbo go out of scope and be deleted?
 		// Opengl shouldn't let it actually be deleted since the vao still
 		// references it
-		return Mesh{ vao };
+		return Mesh{ vao, shader: self.shader.unwrap() };
 	}
 }

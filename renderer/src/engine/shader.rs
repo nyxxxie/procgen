@@ -169,9 +169,14 @@ impl Program {
         self.id
     }
 
-    pub fn set_used(&self) {
+    pub fn activate(&self) {
         unsafe {
             gl::UseProgram(self.id);
+        }
+    }
+    pub fn deactivate(&self) {
+        unsafe {
+            gl::UseProgram(0);
         }
     }
 }

@@ -57,6 +57,7 @@ fn main() {
 		.vertex_data(&vertices)
 		.attribute(0, 3)
 		.attribute(1, 3)
+		.shader(shader)
 		.build();
 
     /* Main game loop */
@@ -79,7 +80,6 @@ fn main() {
         }
 
         /* Draw the triangle */
-		shader.set_used();
 		tri_mesh.draw_triangles();
 
         window.gl_swap_window();
