@@ -14,6 +14,7 @@ use gl::types::{ GLuint, GLint, GLvoid };
 /// Represents a mesh of vertices.
 pub struct Mesh {
     vao: VertexArray,
+	index_amt: usize,
 	shader: Program,
 }
 
@@ -23,9 +24,9 @@ impl Mesh {
 		self.shader.activate();
 		unsafe {
             gl::DrawArrays(
-                mode,  // mode
+                mode,
                 0,  // starting index
-                3);  // number of indices to be rendered
+                self.index_amt as GLint);
 		}
 		self.vao.unbind();
 	}
@@ -62,6 +63,17 @@ impl MeshBuilder {
 		};
 	}
 
+	pub fn new_quad() -> MeshBuilder {
+		return MeshBuilder::new()
+			.vertex_data(&[
+				-0.5,  0.5, 0.0,  // upper left
+				 0.5,  0.5, 0.0,  // upper right
+				-0.5, -0.5, 0.0,  // lower left
+				 0.5, -0.5, 0.0,  // lower right
+			])
+			.attribute(0, 3);
+    }
+
 	pub fn vertex_data(mut self, vertices: &[f32]) -> MeshBuilder {
 		for vertex in vertices {
 			self.vertices.push(*vertex);
@@ -76,6 +88,7 @@ impl MeshBuilder {
 		return self;
 	}
 
+	// TODO: support named attributes, probably though a new function
 	pub fn attribute(
 		mut self,
 		location: GLuint,
@@ -106,6 +119,15 @@ impl MeshBuilder {
 			row_size += (attribute.component_amt as usize) * size_of::<f32>();
         }
 
+		/* Determine the amount of indices to render */
+		let mut index_amt = self.indices.len();
+		if index_amt == 0 {
+			index_amt = self.vertices.len() / row_size;
+		}
+		print!("{} {}\n", index_amt, self.vertices.len());
+
+		// TODO: handle indices
+
 		/* Set attributes */
 		let mut col_offset: usize = 0;
 		for attribute in &self.attributes {
@@ -132,6 +154,10 @@ impl MeshBuilder {
 		// TODO: is it safe to let the vbo go out of scope and be deleted?
 		// Opengl shouldn't let it actually be deleted since the vao still
 		// references it
-		return Mesh{ vao, shader: self.shader.unwrap() };
+		return Mesh{
+			vao,
+			index_amt,
+			shader: self.shader.unwrap()
+		};
 	}
 }

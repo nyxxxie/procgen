@@ -40,10 +40,14 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.3, 1.0);
     }
 
-    /* Create shader program */
-    let shader = engine::shader::Program::new_basic(
+    /* Create shader programs */
+    let tri_shader = engine::shader::Program::new_basic(
         include_str!("engine/shaders/triangle.vert"),
         include_str!("engine/shaders/triangle.frag")).unwrap();
+
+    let quad_shader = engine::shader::Program::new_basic(
+        include_str!("engine/shaders/quad.vert"),
+        include_str!("engine/shaders/quad.frag")).unwrap();
 
     /* Create vertices */
     let vertices: Vec<f32> = vec![
@@ -57,7 +61,11 @@ fn main() {
 		.vertex_data(&vertices)
 		.attribute(0, 3)
 		.attribute(1, 3)
-		.shader(shader)
+		.shader(tri_shader)
+		.build();
+
+	let quad_mesh = engine::mesh::MeshBuilder::new_quad()
+		.shader(quad_shader)
 		.build();
 
     /* Main game loop */
@@ -79,8 +87,9 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        /* Draw the triangle */
-		tri_mesh.draw_triangles();
+        /* Draw the meshes */
+		quad_mesh.draw_triangles();
+		//tri_mesh.draw_triangles();
 
         window.gl_swap_window();
     }
