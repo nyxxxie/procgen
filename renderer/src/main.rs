@@ -41,13 +41,13 @@ fn main() {
     }
 
     /* Create shader programs */
-    let tri_shader = engine::shader::Program::new_basic(
-        include_str!("engine/shaders/triangle.vert"),
-        include_str!("engine/shaders/triangle.frag")).unwrap();
+    let colored_shader = engine::shader::Program::new_basic(
+        include_str!("engine/shaders/basic/colored.vert"),
+        include_str!("engine/shaders/basic/colored.frag")).unwrap();
 
-    let quad_shader = engine::shader::Program::new_basic(
-        include_str!("engine/shaders/quad.vert"),
-        include_str!("engine/shaders/quad.frag")).unwrap();
+    let uncolored_shader = engine::shader::Program::new_basic(
+        include_str!("engine/shaders/basic/uncolored.vert"),
+        include_str!("engine/shaders/basic/uncolored.frag")).unwrap();
 
     /* Create vertices */
     let vertices: Vec<f32> = vec![
@@ -61,11 +61,11 @@ fn main() {
 		.vertex_data(&vertices)
 		.attribute(0, 3)
 		.attribute(1, 3)
-		.shader(tri_shader)
+		.shader(colored_shader)
 		.build();
 
 	let quad_mesh = engine::mesh::MeshBuilder::new_quad()
-		.shader(quad_shader)
+		.shader(uncolored_shader)
 		.build();
 
     /* Main game loop */
