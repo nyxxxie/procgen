@@ -89,7 +89,7 @@ fn main() {
 
         /* Draw the meshes */
 		quad_mesh.draw_triangles();
-		//tri_mesh.draw_triangles();
+		tri_mesh.draw_triangles();
 
         window.gl_swap_window();
     }

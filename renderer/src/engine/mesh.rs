@@ -64,12 +64,17 @@ impl MeshBuilder {
 	}
 
 	pub fn new_quad() -> MeshBuilder {
+		// TODO: use indices
 		return MeshBuilder::new()
 			.vertex_data(&[
+				/* First triangle */
 				-0.5,  0.5, 0.0,  // upper left
 				 0.5,  0.5, 0.0,  // upper right
 				-0.5, -0.5, 0.0,  // lower left
+				/* Second triangle */
+				-0.5, -0.5, 0.0,  // lower left
 				 0.5, -0.5, 0.0,  // lower right
+				 0.5,  0.5, 0.0,  // upper right
 			])
 			.attribute(0, 3);
     }
@@ -122,9 +127,8 @@ impl MeshBuilder {
 		/* Determine the amount of indices to render */
 		let mut index_amt = self.indices.len();
 		if index_amt == 0 {
-			index_amt = self.vertices.len() / row_size;
+			index_amt = (self.vertices.len() * size_of::<f32>()) / row_size;
 		}
-		print!("{} {}\n", index_amt, self.vertices.len());
 
 		// TODO: handle indices
 
