@@ -5,10 +5,13 @@ pub mod engine;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use gl::types::{ GLint, GLuint, GLsizeiptr, GLvoid };
+use gl::types::{ GLint, GLvoid };
 
 const WINDOW_WIDTH: i32 = 900;
 const WINDOW_HEIGHT: i32 = 700;
+
+// TODO: make a camera class.  Add film controls, flight controls, and point travel with
+// easing.
 
 fn main() {
     println!("Hello, world!");
@@ -43,46 +46,22 @@ fn main() {
         include_str!("engine/shaders/triangle.vert"),
         include_str!("engine/shaders/triangle.frag")).unwrap();
 
-    /* Create and bind vertex array object for our mesh */
-    let mut vao: GLuint = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-    }
-
     /* Create vertices */
-    // TODO: make a Mesh struct (accept arbitrary vertex and/or index data),
-    // set attributes by either location or by name, add functions to bind,
-    // unbind, and draw the mesh
-    //
-    // Alternatively, create a Vertex object where we can set position, color,
-    // texture coords, etc.  These will automaticaly be linked to attributes.
-    // Maybe expose the first raw interface and then put this on top?
-    //
-    // Also, create a premade mesh generator (colored cube, textured cube, cylinder, quad, etc)
-
-    // TODO: make a camera class.  Add film controls, flight controls, and point travel with
-    // easing.
     let vertices: Vec<f32> = vec![
-       -0.5, -0.5, 0.0,
-        0.5, -0.5, 0.0,
-        0.0,  0.5, 0.0,
+        // positions    colors
+       -0.5, -0.5, 0.0, 1.0, 0.0, 0.0,
+        0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
+        0.0,  0.5, 0.0, 0.0, 0.0, 1.0,
     ];
+	let vao = engine::vao::VertexArray::new();
+	vao.bind();
+
+	let vbo = engine::buffer::ArrayBuffer::new();
+	vbo.bind();
+	vbo.set_data_static_draw(&vertices);
 
     /* Create a buffer and put vertices inside of it */
-    let mut vbo: GLuint = 0;
     unsafe {
-        /* Create and bind buffer object to put vertices in.  Since we bound
-         * the vertex array object above, this buffer will be associated with
-         * it. */
-        gl::GenBuffers(1, &mut vbo);  // create 1 new buffer
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);  // make buffer active
-        gl::BufferData(
-            gl::ARRAY_BUFFER,  // target
-            (vertices.len() * std::mem::size_of::<f32>()) as GLsizeiptr,  // size of data
-            vertices.as_ptr() as *const GLvoid,  // pointer to data
-            gl::STATIC_DRAW);  // usage
-
         /* Tell buffer about attributes */
         gl::EnableVertexAttribArray(0);  // attrib layout (location = 0)
         gl::VertexAttribPointer(
@@ -90,15 +69,22 @@ fn main() {
             3,  // number of components for this attribute
             gl::FLOAT,  // attribute data type
             gl::FALSE,  // normalized
-            ( 3 * std::mem::size_of::<f32>()) as GLint,  // offset between consecutive attributes
+            (6 * std::mem::size_of::<f32>()) as GLint,  // offset between consecutive attributes
             std::ptr::null());  // offset of first component
+
+        /* Tell buffer about attributes */
+        gl::EnableVertexAttribArray(1);  // attrib layout (location = 0)
+        gl::VertexAttribPointer(
+            1,  // attribute location
+            3,  // number of components for this attribute
+            gl::FLOAT,  // attribute data type
+            gl::FALSE,  // normalized
+            (6 * std::mem::size_of::<f32>()) as GLint,  // offset between consecutive attributes
+            (3 * std::mem::size_of::<f32>()) as *const GLvoid);  // offset of first component
     }
 
-    /* Finish modifying vao by unbinding everything */
-    unsafe {
-        gl::BindVertexArray(0);
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    }
+	vbo.unbind();
+	vao.unbind();
 
     /* Main game loop */
     let mut event_pump = sdl_ctx.event_pump().unwrap();
@@ -123,11 +109,12 @@ fn main() {
         shader.set_used();
         unsafe {
             /* Bind vao.  This will automatically bind the vbo too */
-            gl::BindVertexArray(vao);
+			vao.bind();
             gl::DrawArrays(
                 gl::TRIANGLES,  // mode
                 0,  // starting index
                 3);  // number of indices to be rendered
+			vao.unbind();
         }
 
         window.gl_swap_window()
