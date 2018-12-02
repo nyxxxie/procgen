@@ -6,3 +6,4 @@ authors = ["nyxxie <nyxxxxie@gmail.com>"]
 [dependencies]
 sdl2 = "0.31.0"
 gl = "0.11.0"
+glm = "0.2.3"
