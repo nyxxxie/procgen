@@ -4,13 +4,15 @@
 //
 // Also, create a premade mesh generator (colored cube, textured cube, cylinder, quad, etc)
 extern crate gl;
+mod buffer;
+mod vertex_array;
 
 use std;
 use std::mem::size_of;
-use engine::buffer::Buffer;
-use engine::shader::Program;
-use engine::vao::VertexArray;
 use gl::types::{ GLuint, GLint, GLfloat, GLvoid };
+use engine::shader::Program;
+use self::buffer::Buffer;
+use self::vertex_array::VertexArray;
 
 /// Represents a mesh of vertices.
 pub struct Mesh {
