@@ -10,7 +10,6 @@ mod vertex_array;
 use std;
 use std::mem::size_of;
 use gl::types::{ GLuint, GLint, GLfloat, GLvoid };
-use engine::shader::Program;
 use self::buffer::Buffer;
 use self::vertex_array::VertexArray;
 
@@ -19,13 +18,11 @@ pub struct Mesh {
     vao: VertexArray,
     uses_indices: bool,
 	element_amt: usize,
-	shader: Program,
 }
 
 impl Mesh {
 	pub fn draw(&self, mode: GLuint) {
 		self.vao.bind();
-		self.shader.activate();
         if self.uses_indices {
 		    unsafe {
                 gl::DrawElements(
@@ -64,7 +61,6 @@ pub struct MeshBuilder {
 	vertices: Vec<GLfloat>,
 	indices: Vec<GLuint>,
 	attributes: Vec<Attribute>,
-	shader: Option<Program>,
 }
 
 impl MeshBuilder {
@@ -73,7 +69,6 @@ impl MeshBuilder {
 			vertices: Vec::new(),
 			indices: Vec::new(),
 			attributes: Vec::new(),
-			shader: None,
 		};
 	}
 
@@ -122,11 +117,6 @@ impl MeshBuilder {
 		component_amt: GLint
 	) -> MeshBuilder {
 		self.attributes.push(Attribute{ location, component_amt });
-		return self;
-	}
-
-	pub fn shader(mut self, shader: Program) -> MeshBuilder {
-		self.shader = Some(shader);
 		return self;
 	}
 
@@ -199,7 +189,6 @@ impl MeshBuilder {
 			vao,
             uses_indices,
 			element_amt,
-			shader: self.shader.unwrap()
 		};
 	}
 }

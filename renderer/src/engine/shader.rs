@@ -1,4 +1,5 @@
 extern crate gl;
+extern crate glm;
 
 use std;
 use std::ffi::{ CString };
@@ -162,7 +163,38 @@ impl Program {
             unsafe { gl::DetachShader(program_id, shader.id()); }
         }
 
-        Ok(Program { id: program_id })
+        return Ok(Program { id: program_id })
+    }
+
+    pub fn get_uniform(&self, name: &str) -> Result<i32, String> {
+        let c_name = CString::new(name).unwrap();
+
+        let location = unsafe {
+            gl::GetUniformLocation(self.id, c_name.as_ptr() as *const i8)
+        };
+
+        if location == -1 {
+            return Err(String::from("Invalid uniform name."));
+        }
+
+        return Ok(location);
+    }
+
+    pub fn set_uniform_mat4f(&self, location: i32, value: &glm::Matrix4<f32>) {
+        unsafe {
+            gl::UniformMatrix4fv(
+                location,
+                1,
+                gl::FALSE,
+                value.as_array().as_ptr() as *const f32,
+            );
+        }
+    }
+
+    pub fn set_uniform_3f(&self, location: i32, value: &glm::Vector3<f32>) {
+        unsafe {
+            gl::Uniform3f(location, value.x, value.y, value.z);
+        }
     }
 
     pub fn id(&self) -> gl::types::GLuint {

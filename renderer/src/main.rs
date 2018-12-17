@@ -50,35 +50,56 @@ fn main() {
     sdl_ctx.mouse().capture(true);
 
     /* Create shader programs */
-    let colored_shader = engine::shader::Program::new_basic(
-        include_str!("engine/shaders/basic/colored.vert"),
-        include_str!("engine/shaders/basic/colored.frag")).unwrap();
+    let object_shader = engine::shader::Program::new_basic(
+        include_str!("engine/shaders/basic/object.vert"),
+        include_str!("engine/shaders/basic/object.frag")).unwrap();
 
-    let uncolored_shader = engine::shader::Program::new_basic(
-        include_str!("engine/shaders/basic/uncolored.vert"),
-        include_str!("engine/shaders/basic/uncolored.frag")).unwrap();
-
-    /* Create vertices */
-    let vertices: Vec<f32> = vec![
-        // positions    colors
-       -0.5, -0.5, 0.0, 1.0, 0.0, 0.0,
-        0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
-        0.0,  0.5, 0.0, 0.0, 0.0, 1.0,
-    ];
-	
-	let tri_mesh = engine::mesh::MeshBuilder::new()
-		.vertex_data(&vertices)
+	let cube_mesh = engine::mesh::MeshBuilder::new()
+		.vertex_data(&[
+           -0.5, -0.5, -0.5, // -Z face
+            0.5, -0.5, -0.5,
+            0.5,  0.5, -0.5,
+           -0.5,  0.5, -0.5,
+           -0.5, -0.5,  0.5, // +Z face
+            0.5, -0.5,  0.5,
+            0.5,  0.5,  0.5,
+           -0.5,  0.5,  0.5,
+           -0.5, -0.5, -0.5,  // -X face
+           -0.5,  0.5, -0.5,
+           -0.5,  0.5,  0.5,
+           -0.5, -0.5,  0.5,
+            0.5, -0.5, -0.5,  // +X face
+            0.5,  0.5, -0.5,
+            0.5,  0.5,  0.5,
+            0.5, -0.5,  0.5,
+           -0.5, -0.5, -0.5,  // -Y face
+            0.5, -0.5, -0.5,
+            0.5, -0.5,  0.5,
+           -0.5, -0.5,  0.5,
+           -0.5,  0.5, -0.5,  // +Y face
+            0.5,  0.5, -0.5,
+            0.5,  0.5,  0.5,
+           -0.5,  0.5,  0.5,
+        ])
+		.indices(&[
+            0,  1,  2,  // first triangle is index 0, 1, and 2 in the list of vertices
+            0,  2,  3,
+            4,  5,  6,  // second quad
+            4,  6,  7,
+            8,  9,  10, // third quad
+            8,  10, 11,
+            12, 13, 14, // fourth quad
+            12, 14, 15,
+            16, 17, 18, // fifth quad
+            16, 18, 19,
+            20, 21, 22, // sixth quad
+            20, 22, 23
+        ])
 		.attribute(0, 3)
-		.attribute(1, 3)
-		.shader(colored_shader)
-		.build();
-
-	let quad_mesh = engine::mesh::MeshBuilder::new_quad()
-		.shader(uncolored_shader)
 		.build();
 
     /* Create camera */
-    let camera = engine::camera::Camera::new(glm::vec3(1.0, 1.0, 1.0));
+    let mut camera = engine::camera::Camera::new(glm::vec3(1.0, 1.0, 1.0), WINDOW_WIDTH, WINDOW_HEIGHT);
 
     /* Main game loop */
     //let mut delta_time = 0.0f;
@@ -107,11 +128,21 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        //println!("viematrix:\n{:?}", camera.get_view_matrix());
+        /* Calc modelview matrix */
+        let mut modelview = camera.get_view_matrix();
+        modelview = glm::ext::translate(&modelview, glm::vec3(0.0, 0.0, -4.0));
+
+        /* Set uniforms for the cube's shader */
+        object_shader.activate();
+
+        let modelview_loc = object_shader.get_uniform("modelview").unwrap();
+        let projection_loc = object_shader.get_uniform("projection").unwrap();
+
+        object_shader.set_uniform_mat4f(modelview_loc, &modelview);
+        object_shader.set_uniform_mat4f(projection_loc, &camera.get_projection_matrix());
 
         /* Draw the meshes */
-		quad_mesh.draw_triangles();
-		tri_mesh.draw_triangles();
+		cube_mesh.draw_triangles();
 
         window.gl_swap_window();
     }
