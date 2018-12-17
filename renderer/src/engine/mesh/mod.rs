@@ -157,7 +157,7 @@ impl MeshBuilder {
 
         /* Create an index buffer if we were provided indices */
         let mut uses_indices: bool = false;
-		let mut element_amt = 0;
+		let element_amt;
         if self.indices.len() > 0 {
             /* Create index buffer */
 		    let vbo_indices: Buffer = Buffer::new_element_array_buffer();

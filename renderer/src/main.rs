@@ -105,7 +105,7 @@ fn main() {
 
     /* Initialize tick stuff */
     let start_time = time::SystemTime::now();
-    let mut delta_time: f32 = 0.0;
+    let mut delta_time: f32;
     let mut last_frame: f32 = 0.0;
 
     /* Main game loop */
@@ -126,6 +126,8 @@ fn main() {
                 },
                 _ => {},
             }
+
+            // TODO: create controller class and use that to process input for camera stuff
 
             camera.process_event(delta_time, &event);
         }
