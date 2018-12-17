@@ -2,6 +2,7 @@ extern crate glm;
 extern crate sdl2;
 
 use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 
 const MOVEMENT_SPEED: f32 = 3.0;
 const MOUSE_SENSITIVITY: f32 = 0.1;
@@ -39,15 +40,41 @@ impl Camera {
         return camera;
     }
 
+    fn calc_movement_velocity(&self, _time: f32) -> f32 {
+        // TODO: handle sprint
+        return _time * MOVEMENT_SPEED;
+    }
+
     /// Processes camera for this frame
     pub fn process_event(&mut self, _time: f32, event: &Event) {
+        // TODO: split this into a controller class
         match event {
             Event::MouseMotion{ xrel, yrel, .. } => {
-                self.pitch += *yrel as f32 * -MOUSE_SENSITIVITY;
+                /* Modify pitch and yaw based on mouse motion */
+                self.pitch -= *yrel as f32 * MOUSE_SENSITIVITY;
                 self.yaw += *xrel as f32 * MOUSE_SENSITIVITY;
+
+                /* Constrain pitch */
+                if self.pitch > CAMERA_PITCH_CONSTRAINT {
+                    self.pitch = CAMERA_PITCH_CONSTRAINT;
+                } else if self.pitch < -CAMERA_PITCH_CONSTRAINT {
+                    self.pitch = -CAMERA_PITCH_CONSTRAINT;
+                }
 
                 self.recalc_vectors();
             },
+            Event::KeyDown{ keycode: Option::Some(Keycode::W), ..} => {
+                self.pos = self.pos + self.front * self.calc_movement_velocity(_time);
+            }
+            Event::KeyDown{ keycode: Option::Some(Keycode::S), ..} => {
+                self.pos = self.pos - self.front * self.calc_movement_velocity(_time);
+            }
+            Event::KeyDown{ keycode: Option::Some(Keycode::A), ..} => {
+                self.pos = self.pos - self.right * self.calc_movement_velocity(_time);
+            }
+            Event::KeyDown{ keycode: Option::Some(Keycode::D), ..} => {
+                self.pos = self.pos + self.right * self.calc_movement_velocity(_time);
+            }
             _ => {},
         }
     }

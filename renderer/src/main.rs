@@ -4,6 +4,7 @@ extern crate gl;
 
 pub mod engine;
 
+use std::time;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
@@ -33,8 +34,9 @@ fn main() {
         .build()
         .unwrap();
 
-    /* Hide mouse cursor, since we grab it when we create the window */
+    /* Hide mouse cursor and lock it to center of screen */
     sdl_ctx.mouse().show_cursor(false);
+    sdl_ctx.mouse().set_relative_mouse_mode(true);
 
     /* Init opengl */
     let _gl_ctx = window.gl_create_context().unwrap();
@@ -101,15 +103,19 @@ fn main() {
     /* Create camera */
     let mut camera = engine::camera::Camera::new(glm::vec3(1.0, 1.0, 1.0), WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    /* Initialize tick stuff */
+    let start_time = time::SystemTime::now();
+    let mut delta_time: f32 = 0.0;
+    let mut last_frame: f32 = 0.0;
+
     /* Main game loop */
-    //let mut delta_time = 0.0f;
-    //let mut last_frame = 0.0f;
     let mut event_pump = sdl_ctx.event_pump().unwrap();
     'main_loop: loop {
         /* Calc time delta */
-        //let current_time = something;
-        //delta_time = current_frame - last_frame;
-        //last_frame = current_frame;
+        let elapsed = start_time.elapsed().unwrap();
+        let current_frame = elapsed.as_secs() as f32 + (elapsed.subsec_nanos() as f32) / 1_000_000_000f32;
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
 
         /* Listen for window events */
         for event in event_pump.poll_iter() {
@@ -121,7 +127,7 @@ fn main() {
                 _ => {},
             }
 
-            camera.process_event(0.0, &event);
+            camera.process_event(delta_time, &event);
         }
 
         unsafe {
