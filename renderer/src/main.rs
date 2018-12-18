@@ -100,6 +100,9 @@ fn main() {
 		.attribute(0, 3)
 		.build();
 
+    /* Create controller */
+    let mut controller = engine::controller::Controller::new();
+
     /* Create camera */
     let mut camera = engine::camera::Camera::new(glm::vec3(1.0, 1.0, 1.0), WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -112,13 +115,23 @@ fn main() {
     let mut event_pump = sdl_ctx.event_pump().unwrap();
     'main_loop: loop {
         /* Calc time delta */
+        // TODO: move this stuff to its own file so we can globally access the variable from other
+        // parts of the engine (animation during rendering for example, or event system during
+        // event dispatch).
         let elapsed = start_time.elapsed().unwrap();
         let current_frame = elapsed.as_secs() as f32 + (elapsed.subsec_nanos() as f32) / 1_000_000_000f32;
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
         /* Listen for window events */
+        controller.reset_mouse();
         for event in event_pump.poll_iter() {
+            // TODO: process window events here and forward them to some sort of global event
+            // listener.  For our controller, we might use it to emit controller events (move
+            // camera left, adjust pitch, etc).  Each event will list the absolute time it occured
+            // at as well as the delta time so we can track the time between frames.  Eventually,
+            // move the system so that we hook into events.  We should also support things like
+            // timers through the event system.
             match event {
                 Event::KeyDown{ keycode: Option::Some(Keycode::Escape), ..} |
                 Event::Quit{..} => {
@@ -127,10 +140,10 @@ fn main() {
                 _ => {},
             }
 
-            // TODO: create controller class and use that to process input for camera stuff
-
-            camera.process_event(delta_time, &event);
+            controller.process_window_event(&event);
         }
+
+        camera.process_controller_input(delta_time, &controller);
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);

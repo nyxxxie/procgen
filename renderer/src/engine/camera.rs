@@ -1,10 +1,9 @@
 extern crate glm;
-extern crate sdl2;
 
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use engine::controller::Controller;
 
 const MOVEMENT_SPEED: f32 = 3.0;
+const SPRINT_MODIFIER: f32 = 10.0;
 const MOUSE_SENSITIVITY: f32 = 0.1;
 const CAMERA_PITCH: f32 = 0.0;
 const CAMERA_PITCH_CONSTRAINT: f32 = 89.0;
@@ -40,43 +39,49 @@ impl Camera {
         return camera;
     }
 
-    fn calc_movement_velocity(&self, _time: f32) -> f32 {
+    fn calc_movement_velocity(&self, _time: f32, sprint: bool) -> f32 {
         // TODO: handle sprint
-        return _time * MOVEMENT_SPEED;
+        return _time * MOVEMENT_SPEED * (if sprint { SPRINT_MODIFIER } else { 1.0 });
     }
 
-    /// Processes camera for this frame
-    pub fn process_event(&mut self, _time: f32, event: &Event) {
-        // TODO: split this into a controller class
-        match event {
-            Event::MouseMotion{ xrel, yrel, .. } => {
-                /* Modify pitch and yaw based on mouse motion */
-                self.pitch -= *yrel as f32 * MOUSE_SENSITIVITY;
-                self.yaw += *xrel as f32 * MOUSE_SENSITIVITY;
+    pub fn process_controller_input(&mut self, _time: f32, controller: &Controller) {
+        if controller.was_mouse_moved() {
+            /* Adjust yaw */
+            self.yaw += controller.get_delta_x() * MOUSE_SENSITIVITY;
 
-                /* Constrain pitch */
-                if self.pitch > CAMERA_PITCH_CONSTRAINT {
-                    self.pitch = CAMERA_PITCH_CONSTRAINT;
-                } else if self.pitch < -CAMERA_PITCH_CONSTRAINT {
-                    self.pitch = -CAMERA_PITCH_CONSTRAINT;
-                }
+            /* Adjust pitch */
+            self.pitch -= controller.get_delta_y() * MOUSE_SENSITIVITY;
 
-                self.recalc_vectors();
-            },
-            Event::KeyDown{ keycode: Option::Some(Keycode::W), ..} => {
-                self.pos = self.pos + self.front * self.calc_movement_velocity(_time);
+            /* Constrain pitch */
+            if self.pitch > CAMERA_PITCH_CONSTRAINT {
+                self.pitch = CAMERA_PITCH_CONSTRAINT;
+            } else if self.pitch < -CAMERA_PITCH_CONSTRAINT {
+                self.pitch = -CAMERA_PITCH_CONSTRAINT;
             }
-            Event::KeyDown{ keycode: Option::Some(Keycode::S), ..} => {
-                self.pos = self.pos - self.front * self.calc_movement_velocity(_time);
-            }
-            Event::KeyDown{ keycode: Option::Some(Keycode::A), ..} => {
-                self.pos = self.pos - self.right * self.calc_movement_velocity(_time);
-            }
-            Event::KeyDown{ keycode: Option::Some(Keycode::D), ..} => {
-                self.pos = self.pos + self.right * self.calc_movement_velocity(_time);
-            }
-            _ => {},
         }
+
+        /* Handle vertical movement */
+        if controller.up_pressed() {
+            self.pos = self.pos + self.up * self.calc_movement_velocity(_time, controller.is_sprinting());
+        } else if controller.down_pressed() {
+            self.pos = self.pos - self.up * self.calc_movement_velocity(_time, controller.is_sprinting());
+        }
+
+        /* Handle vertical movement */
+        if controller.forward_pressed() {
+            self.pos = self.pos + self.front * self.calc_movement_velocity(_time, controller.is_sprinting());
+        } else if controller.back_pressed() {
+            self.pos = self.pos - self.front * self.calc_movement_velocity(_time, controller.is_sprinting());
+        }
+
+        /* Handle vertical movement */
+        if controller.left_pressed() {
+            self.pos = self.pos - self.right * self.calc_movement_velocity(_time, controller.is_sprinting());
+        } else if controller.right_pressed() {
+            self.pos = self.pos + self.right * self.calc_movement_velocity(_time, controller.is_sprinting());
+        }
+
+        self.recalc_vectors();
     }
 
     /// Returns view and perspective matrices to transform vectors by in order
